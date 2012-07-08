@@ -1,0 +1,123 @@
+\chapter{Eucalyptus Cloud Computing System}
+\section{Introducing Eucalyptus}
+{\bf Eucalyptus} \textendash\ an opensource software framework for cloud computing that implements what is commonly referred to as 
+Infrastructure as a Service (IaaS); systems that give users the ability to run and control entire virtual machine instances deployed 
+across a variety physical resources. We outline the basic principles of the Eucalyptus design, detail important operational aspects 
+of the system, and discuss architectural trade-offs that we have made in order to allow Eucalyptus to be portable, modular and simple 
+to use on infrastructure commonly found within academic settings.\\
+Finally, we provide evidence that ucalyptus enables users familiar with existing Grid and HPC systems to explore new cloud computing 
+functionality while maintaining access to existing, familiar application development software and Grid middle-ware.
+\section{Eucalyptus design}
+The architecture of the Eucalyptus system is simple, flexible and modular with a hierarchical design reflection common resource
+environments found in many academic settings. In essence, the system allows users to start, control, access, and terminate entire 
+virtual machines using an emulation of Amazon EC2's SOAP and "Query" interfaces. That is, users of Eucalyptus interact with the system 
+using the exact same tools and interfaces that they use to interact with Amazon EC2. Currently, we support VMs that run atop the Xen 
+hypervisor, but plan to add support for KVM/QEMU, VMware, and others in the near future.\\
+We have chosen to implement each high-level system component as a stand-alone web service. This has the following benefits: first, each 
+Web service exposes a welldefined language-agnostic API in the form of a WSDL document containing both operations that the service can 
+perform and input/output data structures. Second, we can leverage existing Web-service features such as WSSecurity policies for secure 
+communication between components. There are four high-level components, each with its own Web-service interface, that comprise a 
+Eucalyptus installation:
+\begin{itemize}
+  \item {\bf Node Controller} \textendash\ controls the execution, inspection, and terminating of VM instances on the host 
+  where it runs.
+  \item {\bf Cluster Controller} \textendash\ gathers information about andschedules VM execution on specific node controllers, 
+  as well as manages virtual instance network
+  \item {\bf Storage Controller} \textendash\ (Walrus) is a put/get storage service that implements Amazon’s S3 interface, providing 
+  a mechanism for storing and accessing virtual machine images and user data.
+  \item {\bf Cloud Controller} \textendash\ is the entry-point into the cloud for users and administrators. It queries node managers 
+  for information about resources, makes highlevel scheduling decisions, and implements them by making requests to cluster controllers.
+\end{itemize}
+\subsection{Node Controller}
+An Node Controller (NC) executes on every node that is designated for hosting VM instances. An NC queries and controls the system 
+software on its node (i.e., the host operating system and the hypervisor) in response to queries and control requests from its 
+Cluster Controller.\\ 
+An NC makes queries to discover the node’s physical resources – the number of cores, the size of memory, the available 
+disk space – as well as to learn about the state of VM instances on the node (although an NC keeps track of the instances that it controls, 
+instances may be started and stopped through mechanisms beyond NC’s control). The information thus collected is propagated up to the 
+Cluster Controller in responses to describeResource and describeInstances requests.
+\subsection{Cluster Controller}
+The Cluster Controller (CC) generally executes on a cluster front-end machine, or any machine that has network connectivity to both the 
+nodes running NCs and to the machine running the Cloud Controller (CLC). Many of the CC's operations are similar to the NC's operations 
+but are generally plural instead of singular (e.g. runInstances, describeInstances, terminateInstances, describeResources). CC has 
+three primary functions: schedule incoming instance run requests to specific NCs, control the instance virtual network overlay, and 
+gather/report information about a set of NCs. When a CC receives a set of instances to run, it contacts each NC component through 
+its describeResource operation and sends the runInstances request to the first NC that has enough free resources to host the instance. 
+When a CC receives a describeResources request, it also receives a list of resource characteristics (cores, memory, and disk) 
+describing the resource requirements needed by an instance (termed a VM "type"). With this information, the CC calculates how 
+many simultaneous instances of the specific "type" can execute on its collection of NCs and reports that number back to the CLC.
+\subsection{Storage Controller (Walrus)}
+Eucalyptus includes Walrus, a data storage service that leverages standard web services technologies (Axis2, Mule) and is interface 
+compatible with Amazon's Simple Storage Service (S3). Walrus implements the REST (via HTTP), sometimes termed the "Query" interface, 
+as well as the SOAP interfaces that are compatible with S3.\\
+Walrus provides two types of functionality:
+\begin{itemize}
+  \item Users that have access to Eucalyptus can use Walrus to stream data into/out of the cloud as well as from instances that they 
+  have started on nodes.
+  \item In addition, Walrus acts as a storage service for VM images. Root filesystem as well as kernel and ramdisk images used to 
+  instantiate VMs on nodes can be uploaded to Walrus and accessed from nodes.
+\end{itemize}
+Users use standard S3 tools (either third party or those provided by Amazon) to stream data into and out of Walrus. The system shares 
+user credentials with the Cloud Controller’s canonical user database.\\
+Like S3, Walrus supports concurrent and serial data transfers. To aid scalability, Walrus does not provide locking for object writes. 
+However, as is the case with S3, users are guaranteed that a consistent copy of the object will be saved if there are concurrent 
+writes to the same object. If a write to an object is encountered while there is a previous write to the same object in progress, 
+the previous write is invalidated. Walrus responds with the MD5 checksum of the object that was stored. Once a request has been verified, 
+the user has been authenticated as a valid Eucalyptus user and checked against access control lists for the object that has been 
+requested, writes and reads are streamed over HTTP.\\
+Walrus also acts as an VM image storage and management service. VM root filesystem, kernel and ramdisk images are packaged and uploaded 
+using standard EC2 tools provided by Amazon. These tools compress images, encrypt them using user credentials, and split them into 
+multiple parts that are described in a image description file.\\ 
+Walrus is entrusted with the task of verifying and decrypting images 
+that have been uploaded by users. When a node controller (NC) requests an image from Walrus before instantiating it on a node, it 
+sends an image download request that is authenticated using an internal set of credentials. Then, images are verified and decrypted, 
+and finally transferred. As a performance optimization, and because VM images are often quite large, Walrus maintains a cache of images 
+that have already been decrypted. Cache invalidation is done when an image manifest is overwritten, or periodically using a simple 
+least recently used scheme. Walrus is designed to be modular such that the authentication, streaming and back-end storage 
+subsystems can be customized by researchers to fit their needs.
+\subsection{Cloud Controller}
+The underlying virtualized resources that comprise a Eucalyptus cloud are exposed and managed by, the Cloud Controller (CLC). The CLC 
+is a collection of webservices which are best grouped by their roles into three categories:
+\begin{itemize}
+  \item \emph{Resource Services} \textendash\ perform system-wide arbitration of resource allocations, let users manipulate properties 
+  of the virtual machines and networks, and monitor both system components and virtual resources
+  \item \emph{Data Services} \textendash\ govern persistent user and system data and provide for a configurable user environment for 
+  formulating resource allocation request properties.
+  \item \emph{Interface Services} \textendash\ present user visible interfaces, handling authentication and protocol translation, 
+  and expose system management tools providing.
+\end{itemize}
+The Resource services process user virtual machine control requests and interact with the CCs to effect the allocation and deallocation 
+of physical resources.\\
+A simple representation of the system’s resource state (SRS) is maintained through communication with the CCs 
+(as intermediates for interrogating the state of the NCs) and used in evaluating the realizability of user requests (vis a vis 
+service-level agreements, or SLAs). The role of the SRS is executed in two stages: when user requests arrive, the information in the SRS 
+is relied upon to make an admission control decision with respect to a user-specified service level expectation. VM creation, then, 
+consists of reservation of the resources in the SRS, downstream request for VM creation, followed by commitment of the resources in the 
+SRS on success, or rollback in case of errors.\\
+The SRS then tracks the state of resource allocations and is the source of authority of changes to the properties of running reservations. 
+SRS information is leveraged by a production rule system allowing for the formulation of an event-based SLA scheme. Application of an SLA is 
+triggered by a corresponding event (e.g., network property changes, expiry of a timer) and can evaluate and modify the request (e.g., 
+reject the request if it is unsatisfiable) or enact changes to the system state (e.g., time-limited allocations). While the system's 
+representation in the SRS may not always reflect the actual resources, notably, the likelihood and nature of the inaccuracies can be 
+quantified and considered when formulating and applying SLAs. Further, the admission control and the runtime SLA metrics work in conjunction 
+to: ensure resources are not overcommitted and maintain a conservative view on resource availability to mitigate possibility of 
+(service- level) failures.\\ 
+The middle tier of Data Services handle the creation, modification, interrogation, and storage of stateful system and user data. Users can 
+query these services to discover available resource information (images and clusters) and manipulate abstract parameters (keypairs, 
+security groups, and network definitions) applicable to virtual machine and network allocations. The Resource Services interact with the 
+Data Services to resolve references to user provided parameters (e.g., keys associated with a VM instance to be created). However, 
+these services are not static configuration parameters. For example, a user is able to change, what amounts to, firewall rules which affect 
+the ingress of traffic. The changes can be made offline and provided as inputs to a resource allocation request, but, additionally, they 
+can be manipulated while the allocation is running. As a result, the services which manage the networking and security group data 
+persistence must also act as agents of change on behalf of a user request to modify the state of a running collection of virtual 
+machines and their supporting virtual network.
+\section{Why use Eucalyptus?}
+Well the eucalyptus system is built to allow administrators and researchers the ability to deploy an infrastructure for user-controlled 
+virtual machine creation and control atop existing resources. Its hierarchical design targets resource commonly found within academic and 
+laboratory settings, including but not limited to small- and mediumsized Linux clusters, workstation pools, and server farms.\\
+Eucalyptus uses a virtual networking solution that provides VM isolation, high performance, and a view of the network that is simple and flat. 
+The system is highly modular, with each module represented by a well-defined API, enabling researchers to replace components for 
+experimentation with new cloud-computing solutions. Finally, the system exposes its feature set through a common user interface currently 
+defined by Amazon EC2 and S3. This allows users who are familiar with EC2 and S3 to transition seamlessly to a Eucalyptus installation by, 
+in most cases, a simple addition of a command-line argument or environment variable, instructing the client application where to send 
+its messages.

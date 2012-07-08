@@ -1,0 +1,116 @@
+\documentclass[a4paper,12pt,titlepage]{scrreprt}
+\usepackage{fancyhdr}
+\usepackage{etoolbox}
+\usepackage[utf8x]{inputenc}
+\usepackage{srcltx}
+\usepackage{listings}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage[pdftex]{graphicx}
+\usepackage{picinpar}
+\usepackage{verbatim}
+\usepackage[english]{babel}
+\usepackage{paralist}
+\usepackage[avantgarde]{quotchap}
+\usepackage[Sonny]{fncychap}
+\usepackage[final]{pdfpages}
+\usepackage{boxedminipage}
+\usepackage{pifont}
+\usepackage{tocbibind}
+\usepackage[top=3cm, bottom=3cm, left=3cm, right=3cm]{geometry}
+\usepackage{multirow}
+\usepackage{color}
+\usepackage{colortbl}
+\usepackage{url}
+\usepackage{setspace}
+\usepackage{caption}
+\usepackage{bigstrut}
+\usepackage{footnote}
+\usepackage{wrapfig}
+\usepackage{float}
+
+\floatstyle{ruled}
+\newfloat{code}{H}{lop}
+\floatname{code}{Code}
+
+\onehalfspacing
+\captionsetup{tablename=Tab.}
+\captionsetup{figurename=Fig.}
+\setcounter{tocdepth}{3}
+\renewcommand{\thesubsection}{\thesection.\arabic{subsection}}
+
+\makesavenoteenv{itemize}
+
+\begin{document}
+\begin{titlepage}
+\title{... cloud smth ...}
+\author{P\u{a}ulesc Alin}
+\date{July, 2012}
+
+\begin{center}
+
+    \textbf {\large West University of Timi\c{s}oara \\
+	Faculty of Mathematics and Computer Science}\\[1.5cm]
+    \textsc {\Large {Thesis}} \\[0.2cm]
+    for the \\[0.2cm]
+    \textsc {\Large {Bachelor's degree}}\\[0.2cm]
+    \textsc {Department of Computer Science}\\[3cm]
+    \textbf{\huge {... cloud smth ...}}\\[3cm]
+
+    \begin{minipage}{0.4\textwidth}
+        \begin{flushleft} \large
+            \emph{Supervisor:}\\
+	    Prof. Dr. Viorel \textsc{Negru}
+        \end{flushleft}
+    \end{minipage}
+    \begin{minipage}{0.4\textwidth}
+        \begin{flushright} \large
+        \emph{Author:}\\
+        \textsc{P\u{a}ulesc} Alin
+        \end{flushright}
+    \end{minipage}
+    \null
+    \vfill
+    Timi\c{s}oara, July 2012
+    \end{center}
+
+\end{titlepage}
+
+
+\pagenumbering{Roman}
+\setcounter{secnumdepth}{-1}
+\chapter{Acknowledgement}
+\begin{center}
+Hereby I express my gratitude to \emph{Prof. Dr. Viorel Negru}, my thesis supervisor,\\[0.2cm]
+for his guidance and support and my \emph{family} who have made all this possible.
+\end{center}
+
+\chapter{Abstract}
+  This paper aims to visit a long-held dream of computing as a utility, an old idea whose time has \emph{finally} come 
+\emph{Cloud Computing}.\\[0.1cm]
+\emph{Cloud Computing} is a new term for a dream which has recently become a commercial reality, cloud computing is
+growing in a rapid step so developers should take it into account. 
+The \emph{boom} in cloud computing over the last few years has led to a situation that is common to many innovations
+and new technologies, many have heard of it, but few actually understand what it is and more importantly, 
+how it can benefit them.\\
+This paper will also try to approach problems like \emph{cloud monitoring}, how can one implement such a system, how others
+already did it.
+
+\setcounter{secnumdepth}{3}
+\setcounter{chapter}{0}
+
+\tableofcontents
+
+\cleardoublepage
+
+\pagenumbering{arabic}
+
+\include{ch1Introduction}
+\include{ch2Monitoring}
+\include{ch3Eucalyptus}
+\include{ch4Cloudkingdom}
+\include{ch5Conclusions}
+%\bibliographystyle{ieeetr}
+%\bibliography{bibliography}
+\end{document}

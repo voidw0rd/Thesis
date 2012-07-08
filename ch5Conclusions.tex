@@ -1,0 +1,57 @@
+\chapter{Conclusions}
+The long dreamed vision of computing as a utility is finally emerging. The elasticity of a utility matches the need of 
+businesses providing services directly to customers over the Internet, as workloads can grow (and shrink) far faster. 
+It used to take years to grow a business to several million customers \textendash\ now it can happen in months.\\[0.3cm]
+From the cloud provider’s view, the construction of very large datacenters at low cost sites using commodity
+computing, storage, and networking uncovered the possibility of selling those resources on a pay-as-you-go model
+below the costs of many medium-sized datacenters, while making a profit by statistically multiplexing among a large
+group of customers. From the cloud user's view, it would be as startling for a new software startup to build its own
+datacenter as it would for a hardware startup to build its own fabrication line. In addition to startups, many other
+established organizations take advantage of the elasticity of Cloud Computing regularly, including newspapers like the
+Washington Post, movie companies like Pixar, and universities like ours. Our lab has benefited substantially from the
+ability to complete research by conference deadlines and adjust resources over the semester to accommodate course
+deadlines. As Cloud Computing users, we were relieved of dealing with the twin dangers of over-provisioning and
+under-provisioning our internal datacenters.\\[0.3cm]
+Some question whether companies accustomed to high-margin businesses, such as ad revenue from search engines
+and traditional packaged software, can compete in Cloud Computing. First, the question presumes that Cloud Computing 
+is a small margin business based on its low cost. Given the typical utilization of medium-sized datacenters, the
+potential factors of 5 to 7 in economies of scale, and the further savings in selection of cloud datacenter locations, the
+apparently low costs offered to cloud users may still be highly profitable to cloud providers. Second, these companies
+may already have the datacenter, networking, and software infrastructure in place for their mainline businesses, so
+Cloud Computing represents the opportunity for more income at little extra cost.
+Although Cloud Computing providers may run afoul of the obstacles summarized in Table 6, we believe that over
+the long run providers will successfully navigate these challenges and set an example for others to follow, perhaps by
+successfully exploiting the opportunities that correspond to those obstacles.
+Hence, developers would be wise to design their next generation of systems to be deployed into Cloud Computing. In 
+general, the emphasis should be horizontal scalability to hundreds or thousands of virtual machines over the
+efficiency of the system on a single virtual machine.\\
+There are specific implications as well:
+\begin{itemize}
+  \item {\bf Applications Software} \textendash\ of the future will likely have a piece that runs on clients and a 
+    piece that runs in the
+    Cloud. The cloud piece needs to both scale down rapidly as well as scale up, which is a new requirement for
+    software systems. The client piece needs to be useful when disconnected from the Cloud, which is not the case
+    for many Web 2.0 applications today. Such software also needs a pay-for-use licensing model to match needs
+    of Cloud Computing.
+  \item {\bf Infrastructure Software} \textendash\ of the future needs to be cognizant that it is no longer running
+    on bare metal but on virtual machines. Moreover, it needs to have billing built in from the beginning, as it is 
+    very difficult to retrofit an accounting system.
+  \item {\bf Hardware Systems} \textendash\ of the future need to be designed at the scale of a container (at 
+    least a dozen racks) rather than at the scale of a single 1U box or single rack, as that is the minimum level at 
+    which it will be purchased. Cost of operation will match performance and cost of purchase in importance in the 
+    acquisition decision. Hence, they need to strive for energy proportionality [9] by making it possible to put 
+    into low power mode the idle portions of the memory, storage, and networking, which already happens inside a 
+    microprocessor today. Hardware should also be designed assuming that the lowest level software will be virtual 
+    machines rather than a single native operating system, and it will need to facilitate flash as a new level of 
+    the memory hierarchy between DRAM and disk. Finally, we need improvements in bandwidth and costs for both datacenter
+     switches and WAN routers.
+\end{itemize}
+While im optimistic about the future of Cloud Computing, I would love to look into a crystal ball to see how popular 
+it is and what it will look like in few years.\\
+Will Cloud Computing be dominated by low-level hardware virtual machines like Amazon EC2, intermediate language offerings 
+like Microsoft Azure, or high-level frameworks like Google AppEngine? Or will we have many virtualization levels that 
+match different applications? Will value-added services by independent companies like RightScale, Heroku, or EngineYard 
+survive in Utility Computing, or will the successful services be entirely co-opted by the Cloud providers? If they do 
+consolidate to a single virtualization layer, will multiple companies embrace a common standard? Will this lead to a 
+race to the bottom in pricing so that it’s unattractive to become a Cloud Computing provider, or will they differentiate 
+in services or quality to maintain margins?

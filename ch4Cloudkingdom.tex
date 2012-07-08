@@ -1,0 +1,247 @@
+\chapter{Cloud Kingdom \textendash\ \emph{application}}
+This is a proof of concept on how to interact with the cloud, on how to use cloud resources and a simple monitoring system, 
+the Cloud Kindom application follows the K.I.S.S. principle \emph{"Keep it simple stupid"}.
+\section{Software solutions}
+For this proof of concept project I decided to use the opensource cloud computing framework \emph{Eucalyptus}. Why ? Well 
+\emph{Eucalyptus} is one of the most wide spread frameworks and you can already find a wide range of libraries and modules 
+to aid you in \emph{talking} with eucalyptus.\\
+My primary goal was to build an application that can start, stop, restart and access virtual machines from eucalyptus, to
+build a simple monitoring system that can give me basic metrics like CPU usage, RAM usage, Disk usage, Network metrics and 
+so on, and to make a web 2.0 interface that can use and display these features.\\
+The application will be written (\emph{mostly}) in Python and Javascript, the following modules and libraries will be used:
+\begin{itemize}
+  \item {\bf Apache Libcloud} \textendash\ is a standard Python library that abstracts away differences among multiple 
+  cloud provider APIs
+  \item {\bf PSutil} \textendash\ is a module providing an interface for retrieving information on all running processes 
+  and system utilization (CPU, disk, memory, network, users) in a portable way by using Python.
+  \item {\bf jQuery} \textendash\ is a fast and concise JavaScript Library that simplifies HTML document traversing, 
+  event handling, animating, and Ajax interactions for rapid web development.
+  \item {\bf Highcharts} \textendash\ Highcharts is a charting library written in pure JavaScript, offering intuitive, 
+  interactive charts to your web site or web application. Highcharts currently supports line, spline, area, areaspline, 
+  column, bar, pie and scatter chart types.
+  \item {\bf Socket.IO} \textendash\ aims to make realtime apps possible in every browser and mobile device, blurring 
+  the differences between the different transport mechanisms. It's care-free realtime 100\% in JavaScript.
+\end{itemize}
+Most of these modules provide a simple interface that you can use and extend to fit your needs.
+\subsection{Apache Libcloud}
+Apache Libcloud is devided into 4 componets:
+\begin{enumerate}
+  \item {\bf Compute} \textendash\ allows you to manage cloud and virtual servers offered by different providers 
+  such as Amazon, Rackspace, Linode and more.
+  \begin{itemize}
+    \item Node \textendash\ represents a cloud or virtual server.
+    \item NodeSize \textendash\ represents node hardware configuration.
+    \item NodeImage \textendash\ represents an operating system image.
+    \item NodeLocation \textendash\ represents a server physical location.
+    \item NodeState \textendash\ represents a node state:
+    \begin{itemize}
+      \item running 
+      \item rebooting
+      \item terminated
+      \item pending 
+      \item unknown
+    \end{itemize}
+  \end{itemize}
+  \item {\bf Storage} \textendash\ API allows you to manage cloud storage and services such as Amazon S3, Rackspace 
+  CloudFiles, Google Storage.
+  \begin{itemize}
+    \item Object \textendash\ represents an object or so called BLOB.
+    \item Container \textendash\ represents a container which can contain multiple objects. Some APIs also call it a Bucket.
+  \end{itemize}
+  \item {\bf Load Balancer} \textendash\  allows you to manage Load Balancers as a service and services such as Rackspace 
+  Cloud Load Balancers, GoGrid Load Balancers and Ninefold Load Balancers.
+  \begin{itemize}
+    \item LoadBalancer \textendash\ represents a load balancer instance.
+    \item Member \textendash\ represents a load balancer member.
+    \item Algorithm \textendash\ represents a load balancing algorithm (round-robin, random, etc).
+  \end{itemize}
+  \item {\bf DNS} \textendash\ allows you to manage DNS as A Service and services such as Zerigo DNS, Rackspace Cloud DNS.
+  \begin{itemize}
+    \item Zone \textendash\ represents a DNS zone or so called domain.
+    \item Record \textendash\ represents a DNS record.
+    \item RecordType \textendash\ represents a record type (A, AAAA, MX, TXT, etc.).
+  \end{itemize}
+\end{enumerate}
+\subsubsection{Examples}
+Deploying an EC2 Node using SSH key authentication
+  \begin{verbatim}
+  #!/bin/env python
+  from libcloud.compute.types import Provider
+  from libcloud.compute.providers import get_driver
+  from libcloud.compute.deployment import ScriptDeployment
+
+  EC2_ACCESS_ID = 'your access key'
+  EC2_SECRET = 'your secret'
+  Driver = get_driver(Provider.EC2_US_EAST)
+  conn = Driver(EC2_ACCESS_ID, EC2_SECRET)
+  image = [i for i in driver.list_images() if i.id =='ami-09965860' ][0]
+  size = [s for s in driver.list_sizes() if s.id == 't1.micro'][0]
+  key_name = 'my_default'
+  key_path = '/home/user/path/to/key.pem'
+  node = conn.deploy_node(name='test', image=image, size=size, deploy=script,
+                          ssh_username='ubuntu', ssh_key=key_path,
+                          ex_keyname=key_name)
+  \end{verbatim}
+\subsection{PSutil}
+PSutil is a module providing an interface for retrieving information on all running processes and system utilization 
+(CPU, disk, memory, network, users) in a portable way by using Python, implementing many functionalities offered by 
+command line tools such as:
+\hspace{0.5cm}ps, top, df, kill, free, lsof, netstat, ifconfig, ncie, ionice, iostat, iotop, pidof, uptime, tty, who, etc.
+\subsubsection{Examples}
+\begin{itemize}
+  \item CPU \textendash\ get cpu times 
+  \begin{verbatim}
+    >>> import psutil
+    >>> psutil.cpu_times()
+    cputimes(user=3961.46, nice=169.729, 
+             system=2150.659, idle=16900.540, 
+             iowait=629.509, irq=0.0, softirq=19.422)
+    \end{verbatim}
+  \item Memory \textendash\ get memory usage
+  \begin{verbatim}
+    >>> import psutil
+    >>> psutil.phymem_usage()
+    usage(total=4153868288, used=2854199296, 
+          free=1299668992, percent=34.6)
+    >>> psutil.virtmem_usage()
+    usage(total=2097147904, used=4096, 
+          free=2097143808, percent=0.0)          
+  \end{verbatim}
+  \item Disk \textendash\ get disk information
+  \begin{verbatim}
+    >>> import psutil
+    >>> psutil.disk_partitions()
+    [partition(device='/dev/sda1', mountpoint='/', fstype='ext4'),
+    partition(device='/dev/sda2', mountpoint='/home', fstype='ext4')]
+    >>> psutil.disk_usage('/')
+    usage(total=21378641920, used=4809781248, 
+          free=15482871808, percent=22.5)
+  \end{verbatim}
+  \item Network \textendash\ get network information
+  \begin{verbatim}
+    >>> import psutil
+    >>> psutil.network_io_counters(pernic=True)
+    {'lo': iostat(bytes_sent=799953745, bytes_recv=799953745, 
+     packets_sent=453698, packets_recv=453698), 
+     'eth0': iostat(bytes_sent=734324837, bytes_recv=4163935363, 
+     packets_sent=3605828, packets_recv=4096685)}
+  \end{verbatim}
+\end{itemize}
+\subsection{jQuery}
+jQuery is an opensource project and one of the most advanced and wide spread javascript library, jQuery is made 
+by and for the community its fast and it simplifies HTML document traversing, event handling, animating, and 
+Ajax interactions for rapid web development.\\
+The jQuery library is CSS3 compliant its cross-browser and lightweight, its syntax is designed to make it easier
+to work with the DOM.\\
+jQuery also provides capabilities for developers to create plug-ins on top of the JavaScript library. 
+This enables developers to create abstractions for low-level interaction and animation, advanced effects and 
+high-level, theme-able widgets. The modular approach to the jQuery library allows the creation of powerful dynamic 
+web pages and web applications.
+\subsubsection{Examples}
+Prevent the default behaviour of an anchor tag when clicked.
+\begin{verbatim}
+  $(document).ready(function(){
+    $("a").click(function(event){
+      alert("As you can see, the link no longer took you to jquery.com");
+      $(this).hide();
+      event.preventDefault();
+    });
+  });
+\end{verbatim}
+Make an element fade in slowly, and add a css class to it.
+\begin{verbatim}
+  $(document).ready(function(){
+    $("#element").fadeIn("slow").addClass("active"); });
+\end{verbatim}
+Make an Ajax call.
+\begin{verbatim}
+  $(document).ready(function(){
+    $.ajax({
+      url: "test.html",
+      context: document.body
+    }).done(function() { 
+      $(this).addClass("done");
+    });
+  });
+\end{verbatim}
+\subsection{HighCharts}
+Highcharts is a charting library written in pure JavaScript, offering an easy way of adding interactive charts to 
+your web site or web application. Highcharts currently supports line, spline, area, areaspline, column, bar, pie 
+and scatter chart types.\\
+It works in all modern browsers including the iPhone/iPad and Internet Explorer from version 6. Standard browsers 
+use SVG for the graphics rendering. In legacy Internet Explorer graphics are drawn using VML.\\
+Highcharts is solely based on native browser technologies and doesn't require client side plugins like Flash or Java. 
+Furthermore you don't need to install anything on your server. No PHP or ASP.NET. Highcharts needs only two JS files 
+to run: The highcharts.js core and either the jQuery, MooTools or Prototype framework. One of these frameworks is most 
+likely already in use in your web page.\\
+Setting the Highcharts configuration options requires no special programming skills. The options are given in a 
+JavaScript object notation structure, which is basically a set of keys and values connected by colons, separated by 
+commas and grouped by curly brackets.\\
+Through a full API you can add, remove and modify series and points or modify axes at any time after chart creation. 
+Numerous events supply hooks for programming agains the chart. In combination with jQuery, MooTools or Prototype's 
+Ajax API, this opens for solutions like live charts constantly updating with values from the server, user supplied 
+data and more.\\
+\clearpage
+\subsubsection{Examples}
+Basic line Chart
+\begin{verbatim}
+chart = new Highcharts.Chart({
+  chart: {
+    renderTo: 'container',
+    type: 'line',
+    marginRight: 130,
+    marginBottom: 25
+  },
+  xAxis: {
+    categories: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun',
+                 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  },
+  yAxis: {
+    title: {
+      text: 'Temperature (°C)'
+    },
+    plotLines: [{
+      value: 0,
+      width: 1,
+      color: '#808080'
+    }]
+  },
+)};  
+\end{verbatim}
+\subsection{Socket.IO}
+Socket.IO is a Node.JS project that makes WebSockets and realtime possible in all browsers. It also enhances 
+WebSockets by providing built-in multiplexing, horizontal scalability, automatic JSON encoding/decoding, and more.
+Socket.IO aims to make realtime apps possible in every browser and mobile device, blurring the differences between 
+the different transport mechanisms. It's care-free realtime 100\% in JavaScript.
+\clearpage
+\subsubsection{Examples}
+Simple echo server using websockets.\\
+{\bf Server side}
+\begin{verbatim}
+var io = require('socket.io').listen(80);
+
+io.sockets.on('connection', function (socket) {
+    socket.emit('news', { hello: 'world' });
+    socket.on('my other event', function (data) {
+    console.log(data);
+  });
+});
+\end{verbatim}
+{\bf Client side}
+\begin{verbatim}
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io.connect('http://localhost');
+  
+  socket.on('news', function (data) {
+    console.log(data);
+    socket.emit('my other event', { my: 'data' });
+  });
+</script>
+\end{verbatim}
+\section{Application Architecture}
+The application is made up of two big componets, one is for consuming cloud resources like starting, stoping virtual 
+machines and the other one is the lightweight monitoring system.
+\begin{itemize}
+  \item 
+\end{itemize}

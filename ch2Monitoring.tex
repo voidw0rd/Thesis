@@ -1,0 +1,68 @@
+\chapter{High-Resolution Monitoring}
+\section{Measuring performance}
+Performance measuring is done for two main reasons:\\
+Firstly, we need to have some figures for marketing our system, secondly we need a diagnostic tool to aid us in finding performance
+problems and bugs in our system during development process, it is nice to have information about the behaviour of the system \textendash\ 
+Are there any peaks in the latency? If so how often? How high? What's the performance with single-core processors? What's the performance
+with multi-core processors? \\[0.3cm]
+As for the diagnostics for development process, a different aproach is needed and a different kind of performance measuring is done.
+Instead of computing aggregate metrics we are more interested in the whole latency and throughout curves, we are not interested if there are 
+peaks in performance, we are interested in where exacly these peaks occur. At the beginning of the test? When the load increases? Etc.\\[0.3cm]
+Programmers employ a wide range of tools to help harden their code before it is deployed \textendash\ ranging from profiles to model checkers 
+to test suites \textendash\ but this is not sufficient, this won't uncover software bugs, intermittent hardware failures, configuration errors
+and unanticipared workloads of live production systems.
+\clearpage
+A set of problems that live production system face:
+\begin{itemize}
+  \item {\bf Comprehensiveness} \textendash\ enough data must be available to not only answer the question \emph{is the system healthy} but
+  to also understand why it is not. This data doesn't need to be restricted to a set of detectable failures but should enable the diagnosis of 
+  faults that cannot be characterized a priori. Data must be collected for the whole system to capture \emph{domino effects} that are typical 
+  in build from componets systems.
+  \item {\bf Robustness} \textendash\ diagnosis myust be possible even in conditions in which the system crashes, preventing postmortem 
+  analysis of the live system, it should not be restricted to deterministic problems and be able to handle complex scenarios.
+  \item {\bf Non-intrusiveness} \textendash\ system monitoring and diagnosis must not impose prohibitive overhead.
+\end{itemize}
+Using post-processing, aggregation and visualization tools, complex misbehaviors can be reconstructed through the quantitative and 
+qualitative analysis of logs. For example, seemingly unresponsive services can be investigated by \emph{quantitatively} analyzing 
+scheduling events to threshild total scheduling delays, which may be due to resource blocking or other reasons. Important events can then 
+be studied  \emph{qualitatively} to isolate their root cause.
+\section{Performance in the VM Environment}
+The main advantages of the virtual machines are that multiple guest operating systems can co-exist on the same computer and it is in 
+strong isolation from  each other.\\
+Another important benefit of the virtual machines is to provide an instruction set architecture (ISA) that could be different from that 
+of the real machine. Applications of virtual machines arise widely in computer science, such as in embedded systems, which support a 
+real-time operating system at the same time as a high-level OS. In virtual machines(VMs) environment, the software layer which provides 
+the virtualization is called a  virtual machine monitor (VMM).
+The main types of virtualization technologies are:
+\begin{itemize}
+  \item {\bf Full-virtualization} \textendash\ is a virtualization technique used to provide a complete simulation of the underlying hardware \textendash\
+  including the full instruction set, input/output operations, interrupts, memory access, and whatever other elements are used by the software 
+  that runs on the bare machine, and that is intended to run in a virtual machine.
+  \item {\bf Para-virtualization} \textendash\ is a virtualization technique that presents a software interface to virtual machines that is similar but 
+  not identical to that of the underlying hardware. The paravirtualization's management module (a hypervisor or virtual machine monitor) operates with 
+  an operating system that has been modified to work in a virtual machine.
+  \item {\bf Pre-virtualization} \textendash\ is a new virtualization technique that instead of manually para-virtualising the host, or attempting to 
+  rewrite binary code at load time it rewrites the assembly-language output of the compiler, a process called compiler afterburning.
+\end{itemize}
+Due to the modularity of the virtualization environments, VM has the following properties, such as flexible, secure, reliable, and easy to manage and 
+configure, which can greatly minimized the hardware cost. However, besides these benefits, it also increases the complexity of virtual computing systems, 
+and maximizes the performance of virtual computing systems.\\
+Performance must be tuned for different types of application workloads. Tuning for large files and continuous performance isn't optimal for small files 
+and vice versa, and tuning for high performance of small files isn't best for large files and continuous performance. If one or two VMs are running 
+especially I/O-intensive applications and hammering a disk, other VMs that utilize the same data store may suffer the effects of disk I/O contention.
+This problem is more difficult to identify than overloaded CPU or memory. Nowadays virtualization is ubiquitous and virtualization technologies play an 
+important and significant role in many IT fields.
+\subsection{Virtual Machine Monitor}
+A virtual machine monitor (VMM) is a host program that allows a single computer to support multiple, identical execution environments. All the users see 
+their systems as self-contained computers isolated from other users, even though every user is served by the same machine. In this context, a virtual 
+machine is an operating system (OS) that is managed by an underlying control program. It can avoid any single program, running in one of the virtual machines, 
+from overusing the resources of the host OS.\\
+The software that creates a virtual machine environment in a computer. In a regular, nonvirtual environment, the operating system is the master control 
+program, which manages the execution of all applications and acts as an interface between the applications and the hardware. In a virtual machine environment, 
+the virtual machine monitor (VMM) becomes the master control program with the maximum privilege level, and the VMM manages one or more operating systems, 
+now referred to as \emph{guest operating systems.} Each guest OS manages its own applications as it normally does in a non-virtual environment, except that 
+it has been separated in the computer by the VMM. Each guest OS with its applications is known as a \emph{virtual machine} and is sometimes called a 
+\emph{guest OS stack}.\\
+In hardware virtualization, the concept host machine refers to the actual machine on which the virtualization takes place. The term guest machine, however, 
+refers to the virtual machine. Likewise, the adjectives host and guest are used to help distinguish the software that run on the actual machine from those 
+that run on the virtual machine. The software that creates a virtual machine on the host hardware is called Hypervisor or Virtual Machine Monitor.\\
